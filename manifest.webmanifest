@@ -1,0 +1,17 @@
+{
+  "name": "Glifo — Editor PDF",
+  "short_name": "Glifo",
+  "description": "Modifica le scritte di qualsiasi PDF mantenendo il font originale.",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#efece6",
+  "theme_color": "#efece6",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "file_handlers": [{ "action": "./", "accept": { "application/pdf": [".pdf"] } }]
+}
