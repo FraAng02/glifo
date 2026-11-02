@@ -11,7 +11,7 @@
   <title>Installa Glifo</title>
   <style>
     :root {
-      --bg: #efece6; --card: #fbfaf7; --ink: #1b1a17; --ink-2: #5d594f; --ink-3: #989286;
+      --bg: #efece6; --card: #fbfaf7; --fig: #e4e0d8; --ink: #1b1a17; --ink-2: #5d594f; --ink-3: #989286;
       --line: rgba(27, 26, 23, 0.1); --accent: #e3472a; --accent-soft: rgba(227, 71, 42, 0.1);
       --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
       --serif: ui-serif, "New York", "Iowan Old Style", Charter, "Palatino Linotype", Georgia, serif;
@@ -19,13 +19,13 @@
     }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
-        --bg: #121110; --card: #1c1b19; --ink: #f2efe8; --ink-2: #b6b0a5; --ink-3: #7c776e;
+        --bg: #121110; --card: #1c1b19; --fig: #2a2825; --ink: #f2efe8; --ink-2: #b6b0a5; --ink-3: #7c776e;
         --line: rgba(255, 255, 255, 0.1); --accent: #ff6a4b; --accent-soft: rgba(255, 106, 75, 0.14);
         color-scheme: dark;
       }
     }
     :root[data-theme="dark"] {
-      --bg: #121110; --card: #1c1b19; --ink: #f2efe8; --ink-2: #b6b0a5; --ink-3: #7c776e;
+      --bg: #121110; --card: #1c1b19; --fig: #2a2825; --ink: #f2efe8; --ink-2: #b6b0a5; --ink-3: #7c776e;
       --line: rgba(255, 255, 255, 0.1); --accent: #ff6a4b; --accent-soft: rgba(255, 106, 75, 0.14);
       color-scheme: dark;
     }
@@ -41,7 +41,11 @@
     h1 em { color: var(--accent); }
     .lead { color: var(--ink-2); margin: 0 0 28px; }
 
-    .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); }
+    .tabs {
+      position: sticky; top: 8px; z-index: 2;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; border-radius: 14px;
+      background: var(--card); border: 1px solid var(--line); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    }
     .tabs button {
       font: 600 14px var(--sans); color: var(--ink-2); background: none; border: 0; border-radius: 10px;
       padding: 10px 4px; cursor: pointer;
@@ -59,34 +63,100 @@
     }
     .dl svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
-    ol.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; display: grid; gap: 10px; }
+    ol.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; display: grid; gap: 12px; }
     ol.steps li {
       counter-increment: s; position: relative; padding: 16px 16px 16px 60px;
-      background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
     }
     ol.steps li::before {
       content: counter(s); position: absolute; left: 16px; top: 14px; width: 30px; height: 30px;
-      display: grid; place-items: center; border-radius: 99px; background: var(--accent-soft); color: var(--accent);
+      display: grid; place-items: center; border-radius: 99px; background: var(--accent); color: #fff;
       font: italic 700 16px var(--serif);
     }
     ol.steps small { display: block; color: var(--ink-3); font-size: 14px; margin-top: 2px; }
     b.ui { font-weight: 600; background: var(--accent-soft); padding: 0 5px; border-radius: 5px; white-space: nowrap; }
-    .done { margin-top: 14px; padding: 14px 16px; border-radius: 14px; border: 1px dashed var(--line); color: var(--ink-2); font-size: 15px; }
+
+    /* Illustrazioni dei passaggi */
+    figure.shot {
+      margin: 14px 0 0 -44px; padding: 16px 12px; border-radius: 12px; background: var(--fig);
+      display: flex; justify-content: center;
+    }
+    figure.shot svg { display: block; width: 100%; height: auto; }
+    figure.shot svg.ph { max-width: 220px; }
+    figure.shot svg.dk { max-width: 460px; }
+    text { font-family: var(--sans); fill: #1b1a17; }
+    .t { font-size: 10px; font-weight: 600; }
+    .s { font-size: 9px; }
+    .m { font-size: 8px; fill: #8a8a8e; }
+    .w { fill: #fff; }
+    .bl { fill: #0a7aff; }
+    .h { font: 400 17px var(--serif); }
+    .a { font-style: italic; fill: #e3472a; }
+    .hl { fill: none; stroke: #e3472a; stroke-width: 3; }
+
+    .done { margin-top: 14px; padding: 16px; border-radius: 16px; border: 1px dashed var(--line); color: var(--ink-2); font-size: 15px; }
     .done strong { color: var(--ink); }
+    .done figure.shot { margin-left: 0; }
     details { margin-top: 12px; font-size: 14px; color: var(--ink-2); }
     summary { cursor: pointer; color: var(--ink); font-weight: 600; }
     code { font: 13px ui-monospace, Menlo, Consolas, monospace; background: var(--card); border: 1px solid var(--line); padding: 2px 6px; border-radius: 6px; word-break: break-all; }
+    .fine { font-size: 13px; color: var(--ink-3); margin-top: 18px; }
 
     footer { margin-top: 40px; text-align: center; font-size: 14px; color: var(--ink-3); }
     footer a { color: var(--accent); }
   </style>
 </head>
 <body>
+
+<!-- Pezzi riutilizzati dalle illustrazioni -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <clipPath id="scrI"><rect x="12" y="10" width="196" height="380" rx="27"/></clipPath>
+    <clipPath id="scrA"><rect x="12" y="10" width="196" height="380" rx="18"/></clipPath>
+    <clipPath id="gclip"><rect width="192" height="192" rx="42"/></clipPath>
+    <linearGradient id="wall" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a5bd9"/><stop offset="1" stop-color="#c2477f"/></linearGradient>
+    <linearGradient id="desk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6f8fd8"/><stop offset="1" stop-color="#b98bc9"/></linearGradient>
+    <symbol id="gicon" viewBox="0 0 192 192"><image href="icons/icon-192.png" width="192" height="192" clip-path="url(#gclip)"/></symbol>
+    <g id="phoneI"><rect x="4" y="2" width="212" height="396" rx="34" fill="#1d1c1a"/><rect x="12" y="10" width="196" height="380" rx="27" fill="#fff"/></g>
+    <g id="topI"><rect x="85" y="19" width="50" height="15" rx="7.5" fill="#1d1c1a"/><text x="40" y="31" style="font-size:10px;font-weight:600">9:41</text></g>
+    <g id="phoneA"><rect x="5" y="2" width="210" height="396" rx="26" fill="#1d1c1a"/><rect x="12" y="10" width="196" height="380" rx="18" fill="#fff"/></g>
+    <g id="topA"><circle cx="110" cy="22" r="5" fill="#1d1c1a"/><text x="28" y="26" style="font-size:9px;font-weight:600">9:41</text></g>
+    <g id="gpage">
+      <rect x="12" y="10" width="196" height="380" fill="#efece6"/>
+      <use href="#gicon" x="26" y="56" width="18" height="18"/>
+      <text x="50" y="69" style="font:italic 600 11px var(--serif)">Glifo</text>
+      <text x="110" y="132" text-anchor="middle" class="h">Riscrivi ogni PDF.</text>
+      <text x="110" y="154" text-anchor="middle" class="h a">Con il suo font.</text>
+      <rect x="46" y="168" width="128" height="4" rx="2" fill="#d6d1c6"/>
+      <rect x="60" y="178" width="100" height="4" rx="2" fill="#d6d1c6"/>
+      <rect x="34" y="198" width="152" height="84" rx="12" fill="#f8f6f2" stroke="#cfc8bb" stroke-dasharray="4 3"/>
+      <rect x="98" y="212" width="24" height="24" rx="7" fill="#f6d9d2"/>
+      <text x="110" y="258" text-anchor="middle" class="s">Tocca per aprire un PDF</text>
+    </g>
+    <g id="tap"><circle r="14" fill="#e3472a" opacity=".25"/><circle r="7" fill="#e3472a" stroke="#fff" stroke-width="2"/></g>
+    <g id="cur"><path d="M0 0v17l4.6-4.2 3 6.9 2.8-1.2-3-6.7H14z" fill="#111" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/></g>
+    <g id="b1"><circle r="9" fill="#e3472a"/><text y="3.5" text-anchor="middle" style="font-size:10px;font-weight:700;fill:#fff">1</text></g>
+    <g id="b2"><circle r="9" fill="#e3472a"/><text y="3.5" text-anchor="middle" style="font-size:10px;font-weight:700;fill:#fff">2</text></g>
+    <g id="home">
+      <rect x="12" y="10" width="196" height="380" fill="url(#wall)"/>
+      <g fill="#fff" opacity=".28">
+        <rect x="30" y="60" width="34" height="34" rx="9"/><rect x="74" y="60" width="34" height="34" rx="9"/><rect x="118" y="60" width="34" height="34" rx="9"/><rect x="162" y="60" width="34" height="34" rx="9"/>
+        <rect x="30" y="114" width="34" height="34" rx="9"/><rect x="74" y="114" width="34" height="34" rx="9"/><rect x="118" y="114" width="34" height="34" rx="9"/><rect x="162" y="114" width="34" height="34" rx="9"/>
+        <rect x="30" y="168" width="34" height="34" rx="9"/><rect x="74" y="168" width="34" height="34" rx="9"/>
+        <rect x="24" y="326" width="172" height="50" rx="20"/>
+      </g>
+      <use href="#gicon" x="118" y="168" width="34" height="34"/>
+      <text x="135" y="214" text-anchor="middle" style="font-size:8px;font-weight:600;fill:#fff">Glifo</text>
+      <rect class="hl" x="111" y="161" width="48" height="60" rx="12"/>
+    </g>
+  </defs>
+</svg>
+
 <main>
   <a class="brand" href="./"><img src="icons/icon-192.png" alt="">Glifo</a>
 
   <h1>Installa Glifo<br><em>in un minuto.</em></h1>
-  <p class="lead">Scegli il tuo dispositivo e segui i passaggi. È gratis.</p>
+  <p class="lead">Scegli il tuo dispositivo e segui le immagini: tocca o clicca dove vedi il <strong style="color:var(--accent)">cerchio rosso</strong>. È gratis.</p>
 
   <div class="tabs" role="tablist">
     <button role="tab" data-os="iphone">iPhone</button>
@@ -95,46 +165,288 @@
     <button role="tab" data-os="windows">Windows</button>
   </div>
 
-  <!-- iPhone -->
+  <!-- ===================== iPhone ===================== -->
   <section data-os="iphone" hidden>
-    <p class="note">Funziona su iPhone e iPad. Usa <strong>Safari</strong>.</p>
+    <p class="note">Funziona su iPhone e iPad. Usa <strong>Safari</strong>, l'app con la bussola blu.</p>
     <ol class="steps">
-      <li>Apri questo indirizzo in Safari:<br><code>fraang02.github.io/glifo</code></li>
-      <li>Tocca il tasto <b class="ui">Condividi</b>, il quadrato con la freccia in su.
-        <small>Se non lo vedi, tocca prima <b class="ui">•••</b> in basso.</small></li>
-      <li>Scorri e tocca <b class="ui">Aggiungi alla schermata Home</b>.</li>
-      <li>Tocca <b class="ui">Aggiungi</b> in alto a destra.</li>
+      <li>Apri <strong>Safari</strong> e scrivi questo indirizzo nella barra in basso:<br><code>fraang02.github.io/glifo</code>
+        <figure class="shot"><svg class="ph" viewBox="0 0 220 400" role="img" aria-label="Safari con l'indirizzo di Glifo">
+          <use href="#phoneI"/>
+          <g clip-path="url(#scrI)">
+            <use href="#gpage"/>
+            <rect x="12" y="312" width="196" height="80" fill="#f4f4f6"/>
+            <rect x="24" y="326" width="172" height="32" rx="16" fill="#fff" stroke="#dcdce0"/>
+            <text x="110" y="346" text-anchor="middle" class="s">fraang02.github.io/glifo</text>
+            <rect x="80" y="378" width="60" height="4" rx="2" fill="#1d1c1a"/>
+          </g>
+          <use href="#topI"/>
+          <rect class="hl" x="19" y="321" width="182" height="42" rx="21"/>
+        </svg></figure>
+      </li>
+      <li>Tocca il tasto <b class="ui">Condividi</b>: il quadrato con la freccia in su.
+        <small>Se non lo vedi, tocca prima <b class="ui">•••</b> accanto all'indirizzo.</small>
+        <figure class="shot"><svg class="ph" viewBox="0 0 220 400" role="img" aria-label="Tasto Condividi di Safari">
+          <use href="#phoneI"/>
+          <g clip-path="url(#scrI)">
+            <use href="#gpage"/>
+            <rect x="12" y="304" width="196" height="88" fill="#f4f4f6"/>
+            <rect x="24" y="312" width="172" height="28" rx="14" fill="#fff" stroke="#dcdce0"/>
+            <text x="110" y="330" text-anchor="middle" class="s">fraang02.github.io</text>
+            <g fill="none" stroke="#0a7aff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M44 352l-6 6 6 6"/>
+              <path d="M74 352l6 6-6 6" stroke="#b8b8bd"/>
+              <path d="M105 355h-4v13h18v-13h-4M110 349v12M105 353l5-5 5 5"/>
+              <path d="M139 352h7a4 4 0 0 1 4 4v10a3 3 0 0 0-3-3h-8zM161 352h-7a4 4 0 0 0-4 4v10a3 3 0 0 1 3-3h8z" stroke-width="1.6"/>
+              <rect x="174" y="351" width="12" height="12" rx="2"/><path d="M178 351v-2h10v10h-2"/>
+            </g>
+            <rect x="80" y="378" width="60" height="4" rx="2" fill="#1d1c1a"/>
+          </g>
+          <use href="#topI"/>
+          <circle class="hl" cx="110" cy="358" r="17"/>
+          <use href="#tap" x="118" y="366"/>
+        </svg></figure>
+      </li>
+      <li>Scorri un po' in giù e tocca <b class="ui">Aggiungi alla schermata Home</b>.
+        <figure class="shot"><svg class="ph" viewBox="0 0 220 400" role="img" aria-label="Menu Condividi con la voce Aggiungi alla schermata Home">
+          <use href="#phoneI"/>
+          <g clip-path="url(#scrI)">
+            <use href="#gpage"/>
+            <rect x="12" y="10" width="196" height="380" fill="#000" opacity=".35"/>
+            <rect x="12" y="118" width="196" height="290" rx="16" fill="#f2f2f7"/>
+            <use href="#gicon" x="26" y="132" width="30" height="30"/>
+            <text x="64" y="145" class="t">Glifo</text>
+            <text x="64" y="157" class="m">fraang02.github.io</text>
+            <circle cx="188" cy="146" r="9" fill="#e3e3e8"/><path d="M185 143l6 6M191 143l-6 6" stroke="#8a8a8e" stroke-width="1.5"/>
+            <g fill="#dcdce2"><circle cx="40" cy="190" r="15"/><circle cx="80" cy="190" r="15"/><circle cx="120" cy="190" r="15"/><circle cx="160" cy="190" r="15"/></g>
+            <rect x="22" y="218" width="176" height="140" rx="10" fill="#fff"/>
+            <text x="34" y="240" class="s">Copia</text>
+            <text x="34" y="268" class="s">Aggiungi a Elenco di lettura</text>
+            <text x="34" y="296" class="s" style="font-weight:600">Aggiungi alla schermata Home</text>
+            <rect x="174" y="288" width="13" height="13" rx="3" fill="none" stroke="#1b1a17" stroke-width="1.3"/><path d="M180.5 291v7M177 294.5h7" stroke="#1b1a17" stroke-width="1.3"/>
+            <text x="34" y="324" class="s">Aggiungi ai Preferiti</text>
+            <text x="34" y="352" class="s">Stampa</text>
+            <g stroke="#ececf0"><path d="M34 254h164M34 282h164M34 310h164M34 338h164"/></g>
+          </g>
+          <use href="#topI"/>
+          <rect class="hl" x="20" y="282" width="180" height="28" rx="8"/>
+          <use href="#tap" x="186" y="300"/>
+        </svg></figure>
+      </li>
+      <li>Tocca <b class="ui">Aggiungi</b> in alto a destra.
+        <figure class="shot"><svg class="ph" viewBox="0 0 220 400" role="img" aria-label="Conferma Aggiungi">
+          <use href="#phoneI"/>
+          <g clip-path="url(#scrI)">
+            <rect x="12" y="10" width="196" height="380" fill="#f2f2f7"/>
+            <text x="22" y="62" class="s bl">Annulla</text>
+            <text x="102" y="62" text-anchor="middle" class="t" style="font-size:8px">Aggiungi a Home</text>
+            <text x="198" y="62" text-anchor="end" class="t bl">Aggiungi</text>
+            <rect x="22" y="82" width="176" height="72" rx="10" fill="#fff"/>
+            <use href="#gicon" x="32" y="94" width="46" height="46"/>
+            <text x="90" y="113" class="t">Glifo</text>
+            <path d="M90 122h98" stroke="#ececf0"/>
+            <text x="90" y="138" class="m">fraang02.github.io</text>
+            <text x="26" y="176" class="m">Verrà aggiunta un'icona alla schermata</text>
+            <text x="26" y="187" class="m">Home per aprire velocemente il sito.</text>
+            <rect x="12" y="262" width="196" height="130" fill="#d1d3d9"/>
+            <g fill="#fff"><rect x="20" y="272" width="16" height="22" rx="4"/><rect x="40" y="272" width="16" height="22" rx="4"/><rect x="60" y="272" width="16" height="22" rx="4"/><rect x="80" y="272" width="16" height="22" rx="4"/><rect x="100" y="272" width="16" height="22" rx="4"/><rect x="120" y="272" width="16" height="22" rx="4"/><rect x="140" y="272" width="16" height="22" rx="4"/><rect x="160" y="272" width="16" height="22" rx="4"/><rect x="180" y="272" width="16" height="22" rx="4"/>
+            <rect x="30" y="302" width="16" height="22" rx="4"/><rect x="50" y="302" width="16" height="22" rx="4"/><rect x="70" y="302" width="16" height="22" rx="4"/><rect x="90" y="302" width="16" height="22" rx="4"/><rect x="110" y="302" width="16" height="22" rx="4"/><rect x="130" y="302" width="16" height="22" rx="4"/><rect x="150" y="302" width="16" height="22" rx="4"/><rect x="170" y="302" width="16" height="22" rx="4"/>
+            <rect x="60" y="332" width="100" height="22" rx="4"/></g>
+          </g>
+          <use href="#topI"/>
+          <rect class="hl" x="152" y="47" width="52" height="22" rx="8"/>
+          <use href="#tap" x="186" y="78"/>
+        </svg></figure>
+      </li>
     </ol>
-    <p class="done"><strong>Fatto!</strong> Trovi Glifo tra le tue app. Per salvare un PDF modificato tocca <b class="ui">Esporta</b> e poi <b class="ui">Salva su File</b>.</p>
+    <div class="done"><strong>Fatto!</strong> Ora trovi Glifo tra le tue app, come tutte le altre.
+      <figure class="shot"><svg class="ph" viewBox="0 0 220 400" role="img" aria-label="Icona di Glifo nella schermata Home">
+        <use href="#phoneI"/><g clip-path="url(#scrI)"><use href="#home"/></g><use href="#topI"/>
+      </svg></figure>
+      Per salvare un PDF modificato: tocca <b class="ui">Esporta</b> e poi <b class="ui">Salva su File</b>.
+    </div>
   </section>
 
-  <!-- Android -->
+  <!-- ===================== Android ===================== -->
   <section data-os="android" hidden>
-    <p class="note">Usa <strong>Chrome</strong>.</p>
+    <p class="note">Usa <strong>Chrome</strong>, l'app con il cerchio rosso, giallo e verde.</p>
     <ol class="steps">
-      <li>Apri questo indirizzo in Chrome:<br><code>fraang02.github.io/glifo</code></li>
-      <li>Tocca i tre puntini <b class="ui">⋮</b> in alto a destra.</li>
+      <li>Apri <strong>Chrome</strong> e scrivi questo indirizzo nella barra in alto:<br><code>fraang02.github.io/glifo</code>
+        <figure class="shot"><svg class="ph" viewBox="0 0 220 400" role="img" aria-label="Chrome con l'indirizzo di Glifo">
+          <use href="#phoneA"/>
+          <g clip-path="url(#scrA)">
+            <use href="#gpage" y="34"/>
+            <rect x="12" y="10" width="196" height="72" fill="#fff"/>
+            <rect x="22" y="44" width="146" height="28" rx="14" fill="#f1f3f4"/>
+            <text x="95" y="62" text-anchor="middle" class="s">fraang02.github.io/glifo</text>
+            <rect x="176" y="51" width="14" height="14" rx="3" fill="none" stroke="#3c4043" stroke-width="1.5"/><text x="183" y="61.5" text-anchor="middle" style="font-size:8px;font-weight:700">1</text>
+            <g fill="#3c4043"><circle cx="200" cy="52" r="1.8"/><circle cx="200" cy="58" r="1.8"/><circle cx="200" cy="64" r="1.8"/></g>
+          </g>
+          <use href="#topA"/>
+          <rect class="hl" x="17" y="39" width="156" height="38" rx="19"/>
+        </svg></figure>
+      </li>
+      <li>Tocca i tre puntini <b class="ui">⋮</b> in alto a destra.
+        <figure class="shot"><svg class="ph" viewBox="0 0 220 400" role="img" aria-label="Menu a tre puntini di Chrome">
+          <use href="#phoneA"/>
+          <g clip-path="url(#scrA)">
+            <use href="#gpage" y="34"/>
+            <rect x="12" y="10" width="196" height="72" fill="#fff"/>
+            <rect x="22" y="44" width="146" height="28" rx="14" fill="#f1f3f4"/>
+            <text x="95" y="62" text-anchor="middle" class="s">fraang02.github.io</text>
+            <rect x="176" y="51" width="14" height="14" rx="3" fill="none" stroke="#3c4043" stroke-width="1.5"/><text x="183" y="61.5" text-anchor="middle" style="font-size:8px;font-weight:700">1</text>
+            <g fill="#3c4043"><circle cx="200" cy="52" r="1.8"/><circle cx="200" cy="58" r="1.8"/><circle cx="200" cy="64" r="1.8"/></g>
+          </g>
+          <use href="#topA"/>
+          <circle class="hl" cx="200" cy="58" r="13"/>
+          <use href="#tap" x="196" y="72"/>
+        </svg></figure>
+      </li>
       <li>Tocca <b class="ui">Installa app</b>.
-        <small>Su alcuni telefoni si chiama «Aggiungi a schermata Home».</small></li>
-      <li>Conferma con <b class="ui">Installa</b>.</li>
+        <small>Su alcuni telefoni si chiama «Aggiungi a schermata Home».</small>
+        <figure class="shot"><svg class="ph" viewBox="0 0 220 400" role="img" aria-label="Voce Installa app nel menu di Chrome">
+          <use href="#phoneA"/>
+          <g clip-path="url(#scrA)">
+            <use href="#gpage" y="34"/>
+            <rect x="12" y="10" width="196" height="72" fill="#fff"/>
+            <rect x="22" y="44" width="146" height="28" rx="14" fill="#f1f3f4"/>
+            <rect x="84" y="40" width="120" height="242" rx="10" fill="#fff" stroke="#e0e0e0"/>
+            <g fill="#c4c7cc"><circle cx="102" cy="60" r="6"/><circle cx="126" cy="60" r="6"/><circle cx="150" cy="60" r="6"/><circle cx="174" cy="60" r="6"/></g>
+            <text x="98" y="94" class="s">Nuova scheda</text>
+            <text x="98" y="120" class="s">Scheda in incognito</text>
+            <text x="98" y="146" class="s">Cronologia</text>
+            <text x="98" y="172" class="s">Download</text>
+            <text x="98" y="198" class="s">Preferiti</text>
+            <text x="98" y="224" class="s" style="font-weight:600">Installa app</text>
+            <text x="98" y="250" class="s">Condividi…</text>
+            <text x="98" y="276" class="s">Impostazioni</text>
+          </g>
+          <use href="#topA"/>
+          <rect class="hl" x="86" y="209" width="116" height="24" rx="7"/>
+          <use href="#tap" x="168" y="221"/>
+        </svg></figure>
+      </li>
+      <li>Conferma toccando <b class="ui">Installa</b>.
+        <figure class="shot"><svg class="ph" viewBox="0 0 220 400" role="img" aria-label="Conferma Installa">
+          <use href="#phoneA"/>
+          <g clip-path="url(#scrA)">
+            <use href="#gpage" y="34"/>
+            <rect x="12" y="10" width="196" height="72" fill="#fff"/>
+            <rect x="12" y="10" width="196" height="380" fill="#000" opacity=".4"/>
+            <rect x="26" y="140" width="168" height="130" rx="20" fill="#fff"/>
+            <text x="42" y="168" style="font-size:13px">Installa app</text>
+            <use href="#gicon" x="42" y="182" width="32" height="32"/>
+            <text x="82" y="196" class="t">Glifo</text>
+            <text x="82" y="208" class="m">fraang02.github.io</text>
+            <text x="98" y="252" class="t" style="fill:#1a73e8">Annulla</text>
+            <text x="146" y="252" class="t" style="fill:#1a73e8">Installa</text>
+          </g>
+          <use href="#topA"/>
+          <rect class="hl" x="140" y="239" width="50" height="20" rx="8"/>
+          <use href="#tap" x="176" y="268"/>
+        </svg></figure>
+      </li>
     </ol>
-    <p class="done"><strong>Fatto!</strong> Trovi Glifo tra le tue app.</p>
+    <div class="done"><strong>Fatto!</strong> Ora trovi Glifo tra le tue app, come tutte le altre.
+      <figure class="shot"><svg class="ph" viewBox="0 0 220 400" role="img" aria-label="Icona di Glifo nella schermata Home">
+        <use href="#phoneA"/><g clip-path="url(#scrA)"><use href="#home"/></g><use href="#topA"/>
+      </svg></figure>
+    </div>
   </section>
 
-  <!-- Mac -->
+  <!-- ===================== Mac ===================== -->
   <section data-os="mac" hidden>
     <p class="note">Per i Mac con chip Apple (M1, M2, M3, M4…). Per verificarlo: menu Mela in alto a sinistra → <em>Informazioni su questo Mac</em>.</p>
     <a class="dl" href="https://github.com/FraAng02/glifo/releases/download/v1.0.0/Glifo-1.0.0-arm64.dmg">
       <svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Scarica per Mac
     </a>
     <ol class="steps">
-      <li>Apri il file <b class="ui">Glifo-1.0.0-arm64.dmg</b> che hai scaricato.</li>
-      <li>Trascina l'icona di Glifo nella cartella <b class="ui">Applicazioni</b>.</li>
-      <li>Apri Glifo da Applicazioni. Comparirà un avviso: premi <b class="ui">Fine</b>.
-        <small>Succede solo la prima volta, perché l'app non è venduta sull'App Store.</small></li>
-      <li>Apri <b class="ui">Impostazioni di Sistema</b> → <b class="ui">Privacy e sicurezza</b>, scorri in fondo e premi <b class="ui">Apri comunque</b>.</li>
+      <li>Apri il file scaricato (<b class="ui">Glifo-1.0.0-arm64.dmg</b>, lo trovi in <em>Download</em>) e <strong>trascina l'icona di Glifo sulla cartella Applicazioni</strong>.
+        <figure class="shot"><svg class="dk" viewBox="0 0 360 210" role="img" aria-label="Trascina Glifo nella cartella Applicazioni">
+          <rect width="360" height="210" rx="8" fill="url(#desk)"/>
+          <rect x="40" y="18" width="280" height="174" rx="10" fill="#fff"/>
+          <path d="M40 28a10 10 0 0 1 10-10h260a10 10 0 0 1 10 10v12H40z" fill="#ececec"/>
+          <circle cx="54" cy="30" r="4.5" fill="#ff5f57"/><circle cx="68" cy="30" r="4.5" fill="#febc2e"/><circle cx="82" cy="30" r="4.5" fill="#28c840"/>
+          <text x="180" y="33" text-anchor="middle" class="t">Glifo</text>
+          <use href="#gicon" x="78" y="74" width="64" height="64"/>
+          <text x="110" y="158" text-anchor="middle" class="s">Glifo</text>
+          <path d="M218 84a6 6 0 0 1 6-6h16l6 6h26a6 6 0 0 1 6 6v42a6 6 0 0 1-6 6h-54a6 6 0 0 1-6-6z" fill="#4aa3f0"/>
+          <path d="M218 96h60v36a6 6 0 0 1-6 6h-48a6 6 0 0 1-6-6z" fill="#6cb8f6"/>
+          <text x="248" y="124" text-anchor="middle" style="font-size:20px;font-weight:700;fill:#fff;opacity:.8">A</text>
+          <text x="248" y="158" text-anchor="middle" class="s">Applicazioni</text>
+          <path d="M152 106h50" stroke="#e3472a" stroke-width="3" stroke-dasharray="6 4"/>
+          <path d="M198 98l10 8-10 8" fill="none" stroke="#e3472a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect class="hl" x="210" y="68" width="76" height="98" rx="10"/>
+          <use href="#cur" x="250" y="110"/>
+        </svg></figure>
+      </li>
+      <li>Apri <strong>Glifo</strong> dalla cartella Applicazioni. La prima volta compare questo avviso: premi <b class="ui">Fine</b>.
+        <small>È normale: succede solo perché l'app non viene dall'App Store.</small>
+        <figure class="shot"><svg class="dk" viewBox="0 0 360 210" role="img" aria-label="Avviso Glifo non è stato aperto">
+          <rect width="360" height="210" rx="8" fill="url(#desk)"/>
+          <rect x="104" y="14" width="152" height="184" rx="14" fill="#f6f6f6"/>
+          <use href="#gicon" x="160" y="26" width="40" height="40"/>
+          <text x="180" y="84" text-anchor="middle" class="t">“Glifo” non è stato aperto</text>
+          <text x="180" y="100" text-anchor="middle" class="m">Apple non ha potuto verificare</text>
+          <text x="180" y="110" text-anchor="middle" class="m">che “Glifo” sia privo di malware</text>
+          <text x="180" y="120" text-anchor="middle" class="m">che potrebbe danneggiare il Mac.</text>
+          <rect x="116" y="140" width="128" height="20" rx="6" fill="#0a7aff"/>
+          <text x="180" y="153.5" text-anchor="middle" class="t w">Fine</text>
+          <rect x="116" y="166" width="128" height="20" rx="6" fill="#e3e3e3"/>
+          <text x="180" y="179.5" text-anchor="middle" class="s">Sposta nel Cestino</text>
+          <rect class="hl" x="111" y="135" width="138" height="30" rx="9"/>
+          <use href="#cur" x="228" y="150"/>
+        </svg></figure>
+      </li>
+      <li>Apri <b class="ui">Impostazioni di Sistema</b> (l'ingranaggio grigio), clicca <b class="ui">Privacy e sicurezza</b>, scorri <strong>fino in fondo</strong> e clicca <b class="ui">Apri comunque</b>.
+        <figure class="shot"><svg class="dk" viewBox="0 0 360 210" role="img" aria-label="Privacy e sicurezza, pulsante Apri comunque">
+          <rect width="360" height="210" rx="8" fill="url(#desk)"/>
+          <rect x="10" y="10" width="340" height="190" rx="10" fill="#fff"/>
+          <path d="M20 10h96v190H20a10 10 0 0 1-10-10V20a10 10 0 0 1 10-10z" fill="#efeff2"/>
+          <circle cx="24" cy="22" r="4" fill="#ff5f57"/><circle cx="36" cy="22" r="4" fill="#febc2e"/><circle cx="48" cy="22" r="4" fill="#28c840"/>
+          <text x="24" y="52" class="s">Wi‑Fi</text>
+          <text x="24" y="70" class="s">Bluetooth</text>
+          <text x="24" y="88" class="s">Rete</text>
+          <text x="24" y="106" class="s">Notifiche</text>
+          <text x="24" y="124" class="s">Generali</text>
+          <rect x="16" y="133" width="96" height="18" rx="5" fill="#0a7aff"/>
+          <text x="24" y="145" class="s w" style="font-weight:600">Privacy e sicurezza</text>
+          <text x="24" y="166" class="s">Touch ID e password</text>
+          <text x="24" y="184" class="s">Utenti e gruppi</text>
+          <text x="128" y="34" style="font-size:12px;font-weight:700">Privacy e sicurezza</text>
+          <g fill="#f2f2f5"><rect x="128" y="44" width="210" height="16" rx="4"/><rect x="128" y="64" width="210" height="16" rx="4"/><rect x="128" y="84" width="210" height="16" rx="4"/></g>
+          <text x="233" y="114" text-anchor="middle" class="m" style="fill:#e3472a;font-weight:600">↓ scorri fino in fondo ↓</text>
+          <text x="128" y="132" class="t" style="font-size:9px">Sicurezza</text>
+          <rect x="128" y="138" width="210" height="54" rx="6" fill="#f5f5f7"/>
+          <text x="136" y="152" class="m" style="fill:#3a3a3c">L'apertura di “Glifo” è stata bloccata</text>
+          <text x="136" y="162" class="m" style="fill:#3a3a3c">per proteggere il Mac.</text>
+          <rect x="250" y="168" width="80" height="17" rx="5" fill="#fff" stroke="#d0d0d4"/>
+          <text x="290" y="179.5" text-anchor="middle" class="s">Apri comunque</text>
+          <rect class="hl" x="13" y="130" width="102" height="24" rx="7"/>
+          <use href="#b1" x="116" y="128"/>
+          <rect class="hl" x="245" y="163" width="90" height="27" rx="8"/>
+          <use href="#b2" x="244" y="160"/>
+          <use href="#cur" x="326" y="180"/>
+        </svg></figure>
+      </li>
+      <li>Clicca ancora <b class="ui">Apri comunque</b> e inserisci la <strong>password del Mac</strong> (o usa l'impronta).
+        <figure class="shot"><svg class="dk" viewBox="0 0 360 210" role="img" aria-label="Conferma Apri comunque">
+          <rect width="360" height="210" rx="8" fill="url(#desk)"/>
+          <rect x="104" y="14" width="152" height="184" rx="14" fill="#f6f6f6"/>
+          <use href="#gicon" x="160" y="26" width="40" height="40"/>
+          <text x="180" y="84" text-anchor="middle" class="t">Aprire “Glifo”?</text>
+          <text x="180" y="100" text-anchor="middle" class="m">Apple non ha potuto verificare</text>
+          <text x="180" y="110" text-anchor="middle" class="m">l'app. Aprila solo se ti fidi</text>
+          <text x="180" y="120" text-anchor="middle" class="m">della sua provenienza.</text>
+          <rect x="116" y="140" width="128" height="20" rx="6" fill="#e3e3e3"/>
+          <text x="180" y="153.5" text-anchor="middle" class="s">Apri comunque</text>
+          <rect x="116" y="166" width="128" height="20" rx="6" fill="#0a7aff"/>
+          <text x="180" y="179.5" text-anchor="middle" class="t w">Fine</text>
+          <rect class="hl" x="111" y="135" width="138" height="30" rx="9"/>
+          <use href="#cur" x="232" y="150"/>
+        </svg></figure>
+      </li>
     </ol>
-    <p class="done"><strong>Fatto!</strong> Dalla prossima volta Glifo si apre con un normale doppio clic.</p>
+    <p class="done"><strong>Fatto!</strong> Dalla prossima volta Glifo si apre con un normale doppio clic, anche dal Launchpad.</p>
     <details>
       <summary>Dice che l'app «è danneggiata»?</summary>
       <p>Apri l'app <em>Terminale</em>, incolla questa riga e premi Invio, poi riapri Glifo:</p>
@@ -142,22 +454,98 @@
     </details>
   </section>
 
-  <!-- Windows -->
+  <!-- ===================== Windows ===================== -->
   <section data-os="windows" hidden>
     <p class="note">Per Windows 10 e 11.</p>
     <a class="dl" href="https://github.com/FraAng02/glifo/releases/download/v1.0.0/Glifo-Setup-1.0.0.exe">
       <svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Scarica per Windows
     </a>
     <ol class="steps">
-      <li>Apri il file <b class="ui">Glifo-Setup-1.0.0.exe</b> che hai scaricato.
-        <small>Se il browser chiede conferma, scegli <b class="ui">Mantieni</b>.</small></li>
-      <li>Se compare la schermata blu «Windows ha protetto il PC», premi <b class="ui">Ulteriori informazioni</b> e poi <b class="ui">Esegui comunque</b>.
-        <small>Succede solo perché l'app è nuova e non ha un certificato a pagamento.</small></li>
-      <li>Premi <b class="ui">Avanti</b>, poi <b class="ui">Installa</b> e infine <b class="ui">Fine</b>.</li>
+      <li>Se il browser dice che il file «non viene scaricato comunemente», clicca i tre puntini <b class="ui">···</b> e poi <b class="ui">Mantieni</b>.
+        <small>Se te lo chiede ancora: <b class="ui">Mostra altro</b> → <b class="ui">Mantieni comunque</b>.</small>
+        <figure class="shot"><svg class="dk" viewBox="0 0 360 210" role="img" aria-label="Pannello download con Mantieni">
+          <rect width="360" height="210" rx="8" fill="#f3f3f3"/>
+          <rect width="360" height="30" fill="#e9e9e9"/>
+          <rect x="60" y="8" width="200" height="16" rx="8" fill="#fff"/>
+          <rect x="138" y="36" width="214" height="104" rx="8" fill="#fff" stroke="#d6d6d6"/>
+          <text x="150" y="56" class="t">Download</text>
+          <path d="M152 70h12l4 4v16h-16z" fill="#fde7c3" stroke="#d29a2c"/>
+          <text x="174" y="78" class="s" style="font-weight:600">Glifo-Setup-1.0.0.exe</text>
+          <text x="174" y="90" class="m">non viene scaricato comunemente…</text>
+          <text x="334" y="80" text-anchor="middle" class="t">···</text>
+          <rect x="236" y="96" width="112" height="56" rx="6" fill="#fff" stroke="#d6d6d6"/>
+          <text x="250" y="116" class="s">Elimina</text>
+          <text x="250" y="140" class="s" style="font-weight:600">Mantieni</text>
+          <circle class="hl" cx="334" cy="77" r="11"/>
+          <use href="#b1" x="320" y="62"/>
+          <rect class="hl" x="240" y="127" width="104" height="20" rx="6"/>
+          <use href="#b2" x="238" y="126"/>
+          <use href="#cur" x="290" y="138"/>
+        </svg></figure>
+      </li>
+      <li>Apri il file scaricato. Se compare la schermata blu «Windows ha protetto il PC», clicca <b class="ui">Ulteriori informazioni</b>…
+        <small>È normale: succede solo perché l'app è nuova.</small>
+        <figure class="shot"><svg class="dk" viewBox="0 0 360 210" role="img" aria-label="Windows ha protetto il PC, Ulteriori informazioni">
+          <rect x="30" y="8" width="300" height="194" fill="#1a63b5"/>
+          <text x="48" y="44" style="font-size:16px;fill:#fff">Windows ha protetto il PC</text>
+          <text x="48" y="68" class="s w">Microsoft Defender SmartScreen ha impedito l'avvio</text>
+          <text x="48" y="80" class="s w">di un'app non riconosciuta. L'esecuzione di questa</text>
+          <text x="48" y="92" class="s w">app potrebbe costituire un rischio per il PC.</text>
+          <text x="48" y="114" class="s w" style="text-decoration:underline;font-weight:600">Ulteriori informazioni</text>
+          <rect x="30" y="166" width="300" height="36" fill="#15559c"/>
+          <rect x="246" y="174" width="74" height="20" fill="none" stroke="#fff"/>
+          <text x="283" y="187.5" text-anchor="middle" class="s w">Non eseguire</text>
+          <rect class="hl" x="42" y="102" width="114" height="18" rx="5"/>
+          <use href="#cur" x="150" y="114"/>
+        </svg></figure>
+      </li>
+      <li>…e poi <b class="ui">Esegui comunque</b>.
+        <figure class="shot"><svg class="dk" viewBox="0 0 360 210" role="img" aria-label="Esegui comunque">
+          <rect x="30" y="8" width="300" height="194" fill="#1a63b5"/>
+          <text x="48" y="44" style="font-size:16px;fill:#fff">Windows ha protetto il PC</text>
+          <text x="48" y="68" class="s w">Microsoft Defender SmartScreen ha impedito l'avvio</text>
+          <text x="48" y="80" class="s w">di un'app non riconosciuta.</text>
+          <text x="48" y="106" class="s w">App:  Glifo-Setup-1.0.0.exe</text>
+          <text x="48" y="120" class="s w">Autore:  Autore sconosciuto</text>
+          <rect x="30" y="166" width="300" height="36" fill="#15559c"/>
+          <rect x="160" y="174" width="80" height="20" fill="none" stroke="#fff"/>
+          <text x="200" y="187.5" text-anchor="middle" class="s w">Esegui comunque</text>
+          <rect x="246" y="174" width="74" height="20" fill="none" stroke="#fff"/>
+          <text x="283" y="187.5" text-anchor="middle" class="s w">Non eseguire</text>
+          <rect class="hl" x="155" y="169" width="90" height="30" rx="6"/>
+          <use href="#cur" x="236" y="186"/>
+        </svg></figure>
+      </li>
+      <li>Si apre l'installazione (è in inglese): clicca <b class="ui">Next</b>, poi <b class="ui">Install</b>, poi <b class="ui">Finish</b>.
+        <figure class="shot"><svg class="dk" viewBox="0 0 360 210" role="img" aria-label="Installazione: Next, Install, Finish">
+          <rect width="360" height="210" rx="8" fill="#cfd8e6"/>
+          <rect x="40" y="14" width="280" height="182" fill="#fff" stroke="#b5b5b5"/>
+          <rect x="40" y="14" width="280" height="22" fill="#fff"/>
+          <text x="50" y="29" class="s">Glifo Setup</text>
+          <text x="306" y="29" class="s">✕</text>
+          <rect x="40" y="36" width="280" height="40" fill="#f6f6f6"/>
+          <text x="52" y="54" class="t">Choose Installation Options</text>
+          <text x="52" y="67" class="m">Who should this application be installed for?</text>
+          <circle cx="60" cy="98" r="5" fill="none" stroke="#555"/>
+          <text x="72" y="101" class="s">Anyone who uses this computer</text>
+          <circle cx="60" cy="118" r="5" fill="none" stroke="#555"/><circle cx="60" cy="118" r="2.5" fill="#0a64c8"/>
+          <text x="72" y="121" class="s">Only for me</text>
+          <path d="M40 158h280" stroke="#ddd"/>
+          <rect x="148" y="168" width="52" height="18" fill="#e9e9e9" stroke="#adadad"/>
+          <text x="174" y="180.5" text-anchor="middle" class="s" style="fill:#999">&lt; Back</text>
+          <rect x="206" y="168" width="52" height="18" fill="#e5f1fb" stroke="#0a64c8"/>
+          <text x="232" y="180.5" text-anchor="middle" class="s">Next &gt;</text>
+          <rect x="264" y="168" width="48" height="18" fill="#e9e9e9" stroke="#adadad"/>
+          <text x="288" y="180.5" text-anchor="middle" class="s">Cancel</text>
+          <rect class="hl" x="201" y="163" width="62" height="28" rx="6"/>
+          <use href="#cur" x="254" y="182"/>
+        </svg></figure>
+      </li>
     </ol>
     <p class="done"><strong>Fatto!</strong> Trovi Glifo nel menu Start e sul desktop.</p>
   </section>
 
+  <p class="fine">Le immagini sono disegni delle schermate reali: sul tuo dispositivo colori e posizioni possono essere leggermente diversi.</p>
   <footer>Preferisci non installare nulla? <a href="./">Usa Glifo dal browser</a>.</footer>
 </main>
 <script>
