@@ -9,6 +9,7 @@ const mobile = () => matchMedia("(max-width: 820px)").matches;
 const cleanFont = (n) => String(n || "").replace(/^[A-Z]{6}\+/, "").replace(/[-_,]/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\s+MT$|\s+PS$/, "").trim();
 
 if (window.glifo?.platform === "darwin") document.body.classList.add("mac-app");
+if (isElectron || isNative) $("installLink")?.remove();
 
 const state = {
   name: "", pages: [], zoom: 1, fit: true, reveal: false,
