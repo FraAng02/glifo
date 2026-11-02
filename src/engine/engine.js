@@ -2,11 +2,14 @@
 // Strategia font, in ordine di fedeltà:
 //   1. "original": riusa la stessa risorsa font del PDF (codici dalla ToUnicode/Encoding)
 //   2. "embedded": re-incorpora il font del PDF se contiene tutti i glifi
-//   3. "library":  stesso font trovato tra quelli installati / aggiunti dall'utente
-//   4. "similar":  font standard simile (avviso all'utente)
+//   3. "library":  stesso font completo (installato, aggiunto dall'utente o scaricato)
+//   4. "mixed":    lettere presenti dal font originale, le mancanti da un gemello open
+//                  con le stesse misure (o da un font standard simile)
+//   5. "twin" / "similar": tutto con il gemello open / con un font standard simile
 import * as mupdf from "mupdf";
 import { glyphNameToUnicode } from "./glyphs.js";
 import { norm } from "./norm.js";
+import { parseFontName } from "../webfonts.js";
 
 export { norm };
 
@@ -15,6 +18,15 @@ const SIMILAR = {
   serif: ["Times-Roman", "Times-Bold", "Times-Italic", "Times-BoldItalic"],
   mono: ["Courier", "Courier-Bold", "Courier-Oblique", "Courier-BoldOblique"],
 };
+
+const SERIF = /serif|times|roman|garamond|georgia|cambria|palatin|minion|caslon|baskerv|bodoni|didot|charter|playfair|merriweather|lora|tinos|gelasio|caladea|antiqua|bookman|century(?!gothic)/i;
+// Famiglia del font standard di ripiego: dal nome, perché il flag "serif" dei PDF è spesso sbagliato
+function similarName(span) {
+  const family = parseFontName(span.fontName).words.join("");
+  const kind = span.mono || /mono|courier|consol|code/i.test(family) ? "mono"
+    : SERIF.test(family) && !/sans/i.test(family) ? "serif" : "sans";
+  return SIMILAR[kind][(span.bold ? 1 : 0) + (span.italic ? 2 : 0)];
+}
 
 const decoders = {};
 function baseEncoding(name) {
@@ -71,8 +83,9 @@ const fmt = (n) => (Math.round(n * 1000) / 1000).toString();
 export class Engine {
   constructor() {
     this.doc = null;
-    this.libraryFonts = new Map(); // norm(nome) -> mupdf.Font
-    this.addedFonts = new Map();   // chiave -> PDFObject (font già aggiunti al documento)
+    this.libraryFonts = new Map(); // norm(nome) -> { font: mupdf.Font, exact, label }
+    this.addedFonts = new Map();   // mupdf.Font -> PDFObject (font già aggiunti al documento)
+    this.standardFonts = new Map(); // nome base14 -> mupdf.Font
     this.spanCache = new Map();
     this.undoStack = [];
     this.redoStack = [];
@@ -92,8 +105,10 @@ export class Engine {
     return { pages, title };
   }
 
-  registerFont(key, data) {
-    try { this.libraryFonts.set(key, new mupdf.Font(key, data)); return true; } catch { return false; }
+  registerFont(key, data, exact = true, label = "") {
+    const cur = this.libraryFonts.get(key);
+    if (cur && cur.size === data.length && cur.label === label) return true; // già registrato
+    try { this.libraryFonts.set(key, { font: new mupdf.Font(key, data), exact, label, size: data.length }); return true; } catch { return false; }
   }
 
   render(pno, scale) {
@@ -206,6 +221,7 @@ export class Engine {
       .filter((f) => f.score > 0 && [...span.text].every((c) => c === " " || f.u2c.has(c)))
       .sort((a, b) => b.score - a.score);
     const res = candidates[0];
+    let base = null; // faccia che copre solo una parte delle lettere
     if (res) {
       // Un font subset senza ToUnicode contiene con certezza solo i caratteri già usati
       let ok = (c) => res.u2c.has(c);
@@ -213,16 +229,31 @@ export class Engine {
         const seen = new Set(this.spans(page.pno).filter((s) => s.fontName === span.fontName).flatMap((s) => [...s.text]));
         ok = (c) => seen.has(c) && res.u2c.has(c);
       }
-      if (glyphs.every(ok)) return { kind: "original", res };
+      base = { ref: res.ref, twoByte: res.twoByte, encode: (c) => (ok(c) ? res.u2c.get(c) : undefined) };
+      if (glyphs.every(ok)) return { kind: "original", faces: [base] };
     }
 
-    const usable = (font) => font && glyphs.every((c) => font.encodeCharacter(c.codePointAt(0)) > 0);
-    if (usable(span.font)) return { kind: "embedded", font: span.font };
+    const has = (font) => (c) => font.encodeCharacter(c.codePointAt(0)) > 0;
+    const usable = (font) => font && glyphs.every(has(font));
+    const face = (font) => ({ font, twoByte: true, encode: (c) => { const g = font.encodeCharacter(c.codePointAt(0)); return g > 0 ? g : undefined; } });
+    if (usable(span.font)) return { kind: "embedded", faces: [face(span.font)] };
     const lib = this.libraryFonts.get(target);
-    if (usable(lib)) return { kind: "library", font: lib };
-    const family = span.mono ? "mono" : span.serif || /times|serif|roman|garamond|georgia/i.test(span.fontName) ? "serif" : "sans";
-    const name = SIMILAR[family][(span.bold ? 1 : 0) + (span.italic ? 2 : 0)];
-    return { kind: "similar", font: new mupdf.Font(name), similarName: name };
+    if (lib?.exact && usable(lib.font)) return { kind: "library", faces: [face(lib.font)], label: lib.label };
+    if (!base && span.font && glyphs.some(has(span.font))) base = face(span.font);
+
+    // Lettere mancanti: gemello open con le stesse misure, altrimenti font standard
+    let sub, label, twin = false;
+    if (lib && usable(lib.font)) { sub = lib.font; label = lib.label; twin = true; }
+    else {
+      label = similarName(span);
+      sub = this.standardFonts.get(label);
+      if (!sub) { sub = new mupdf.Font(label); this.standardFonts.set(label, sub); }
+    }
+    if (base) {
+      const missing = glyphs.filter((c) => base.encode(c) === undefined).length;
+      return { kind: "mixed", faces: [base, face(sub)], label, twin, missing };
+    }
+    return { kind: twin ? "twin" : "similar", faces: [face(sub)], label, twin };
   }
 
   // Nome della risorsa che punta a `ref` nella pagina (la aggiunge se manca).
@@ -248,30 +279,29 @@ export class Engine {
     const span = this.spans(pno)[index];
     page.pno = pno;
     const choice = this.pickFont(page, span, text);
+    for (const f of choice.faces) {
+      if (f.ref) continue;
+      f.ref = this.addedFonts.get(f.font);
+      if (!f.ref) { f.ref = this.doc.addFont(f.font); this.addedFonts.set(f.font, f.ref); }
+    }
 
-    let fontRef, encode, twoByte;
-    if (choice.kind === "original") {
-      fontRef = choice.res.ref;
-      twoByte = choice.res.twoByte;
-      encode = (c) => choice.res.u2c.get(c);
-    } else {
-      const key = choice.kind + ":" + choice.font.getName();
-      fontRef = this.addedFonts.get(key);
-      if (!fontRef) { fontRef = this.doc.addFont(choice.font); this.addedFonts.set(key, fontRef); }
-      twoByte = true;
-      encode = (c) => { const g = choice.font.encodeCharacter(c.codePointAt(0)); return g > 0 ? g : undefined; };
-    }
-    const width = twoByte ? 4 : 2;
-    const parts = [];
-    let run = "";
+    // Sequenze di caratteri consecutivi con la stessa faccia (la prima che ha il glifo)
+    const runs = [];
+    let cur = null;
+    const flush = () => { if (cur?.hex) cur.parts.push(`<${cur.hex}>`), (cur.hex = ""); };
     for (const c of text) {
-      const code = encode(c);
-      if (code === undefined) {           // spazio mancante nel font: avanzamento manuale
-        if (run) parts.push(`<${run}>`), (run = "");
-        parts.push("-260");
-      } else run += code.toString(16).padStart(width, "0");
+      let f = null, code;
+      for (const cand of choice.faces) { code = cand.encode(c); if (code !== undefined) { f = cand; break; } }
+      if (!f) {                            // spazio mancante nel font: avanzamento manuale
+        if (!cur) runs.push((cur = { face: choice.faces[0], parts: [], hex: "" }));
+        flush();
+        cur.parts.push("-260");
+        continue;
+      }
+      if (!cur || cur.face !== f) { flush(); runs.push((cur = { face: f, parts: [], hex: "" })); }
+      cur.hex += code.toString(16).padStart(f.twoByte ? 4 : 2, "0");
     }
-    if (run) parts.push(`<${run}>`);
+    flush();
 
     // Rimuove il testo originale (solo testo: immagini e grafica restano intatte)
     const [x0, y0, x1, y1] = span.bbox;
@@ -280,7 +310,7 @@ export class Engine {
     annot.setRect([x0 + 0.3, y0 + dy, x1 - 0.3, y1 - dy]);
     page.applyRedactions(false, mupdf.PDFPage.REDACT_IMAGE_NONE, mupdf.PDFPage.REDACT_LINE_ART_NONE, mupdf.PDFPage.REDACT_TEXT_REMOVE);
     // La rimozione riscrive le risorse (e può rinominarle): il nome va cercato dopo
-    const resName = this.resourceName(page, fontRef);
+    for (const f of choice.faces) f.name = this.resourceName(page, f.ref);
 
     // Matrice di testo: spazio pagina (y verso il basso) -> spazio utente PDF
     const [dx, dyy] = span.dir;
@@ -288,7 +318,8 @@ export class Engine {
     const tm = mupdf.Matrix.concat([dx, dyy, dyy, -dx, ox, oy], mupdf.Matrix.invert(page.getTransform()));
     const col = span.color;
     const colorOp = col.length === 1 ? `${fmt(col[0])} g` : col.length === 4 ? `${col.map(fmt).join(" ")} k` : `${col.map(fmt).join(" ")} rg`;
-    const ops = `q BT /${resName} ${fmt(span.size)} Tf 0 Tc 0 Tw 100 Tz 0 Tr 0 Ts ${colorOp} ${tm.map(fmt).join(" ")} Tm [${parts.join(" ")}] TJ ET Q\n`;
+    const shows = runs.map((r) => `/${r.face.name} ${fmt(span.size)} Tf [${r.parts.join(" ")}] TJ`).join(" ");
+    const ops = `q BT 0 Tc 0 Tw 100 Tz 0 Tr 0 Ts ${colorOp} ${tm.map(fmt).join(" ")} Tm ${shows} ET Q\n`;
 
     const pageObj = page.getObject();
     const old = pageObj.get("Contents");
@@ -299,7 +330,7 @@ export class Engine {
     contents.push(this.doc.addStream("\nQ\n" + ops, {}));
     pageObj.put("Contents", contents);
 
-    return { kind: choice.kind, fontLabel: choice.kind === "similar" ? choice.similarName : span.fontName };
+    return { kind: choice.kind, fontLabel: choice.label || span.fontName, twin: !!choice.twin, missing: choice.missing || 0 };
   }
 
   // Istantanea di ciò che una modifica tocca: contenuto e risorse della pagina.

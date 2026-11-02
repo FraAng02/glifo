@@ -9,7 +9,6 @@ const mobile = () => matchMedia("(max-width: 820px)").matches;
 const cleanFont = (n) => String(n || "").replace(/^[A-Z]{6}\+/, "").replace(/[-_,]/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\s+MT$|\s+PS$/, "").trim();
 
 if (window.glifo?.platform === "darwin") document.body.classList.add("mac-app");
-if (isElectron || isNative) $("installLink")?.remove();
 
 const state = {
   name: "", pages: [], zoom: 1, fit: true, reveal: false,
@@ -276,8 +275,10 @@ async function select(pno, index) {
     $("canvas").scrollBy({ top: r.top - c.top - (mobile() ? 120 : c.height / 3), behavior: "smooth" });
   }
   const sel = state.sel;
-  const bytes = await resolveFont(span.fontName);
-  if (bytes && state.sel === sel) await call("registerFont", { key: norm(span.fontName), data: bytes.slice() });
+  const found = await resolveFont(span.fontName, { bold: span.bold, italic: span.italic });
+  if (found && state.sel === sel) {
+    await call("registerFont", { key: norm(span.fontName), data: found.bytes.slice(), exact: found.exact, label: found.label });
+  }
   if (state.sel === sel) runPreview();
 }
 
@@ -307,7 +308,7 @@ function showInspector(span, pno) {
   $("selColor").style.background = `rgb(${rgb.map(Math.round).join(",")})`;
   $("selStyle").textContent = [span.bold && "Grassetto", span.italic && "Corsivo"].filter(Boolean).join(" · ") || "Regolare";
   $("selOrig").textContent = span.text.trim();
-  setBadge("pending");
+  setBadge({ kind: "pending" });
   const input = $("editInput");
   input.value = span.text.trim() === span.text ? span.text : span.text.trim();
   input.dataset.lead = span.text.match(/^\s*/)[0];
@@ -318,21 +319,30 @@ function showInspector(span, pno) {
   }
 }
 
-const BADGES = {
-  pending: "Analisi del font…",
-  original: "Font originale del PDF",
-  embedded: "Font originale (incorporato)",
-  library: "Stesso font · versione completa",
-  similar: "Sostituito con un font simile",
-};
-function setBadge(kind, extra) {
+// Il risultato è "approssimato" quando una parte del testo usa un font standard di ripiego
+const isApprox = (r) => r.kind === "similar" || (r.kind === "mixed" && !r.twin);
+const lettere = (n) => `${n} ${n === 1 ? "lettera" : "lettere"}`;
+function badgeText(r) {
+  switch (r.kind) {
+    case "pending": return "Ricerca del font…";
+    case "original": return "Font originale del PDF";
+    case "embedded": return "Font originale (incorporato)";
+    case "library": return "Stesso font · versione completa";
+    case "mixed": return `Font originale · ${lettere(r.missing)} da ${r.fontLabel}`;
+    case "twin": return `Gemello identico: ${r.fontLabel}`;
+    default: return `Sostituito con ${r.fontLabel}`;
+  }
+}
+function setBadge(r) {
   const b = $("selBadge");
-  b.dataset.kind = kind;
-  b.lastElementChild.textContent = kind === "similar" && extra ? `Sostituito con ${extra}` : BADGES[kind];
-  b.title = kind === "similar"
-    ? "Il PDF non contiene tutte le lettere di questo font e il font non è installato. Aggiungilo alla libreria per un risultato identico."
-    : "";
-  $("addFontCta").hidden = kind !== "similar";
+  const approx = isApprox(r);
+  b.dataset.kind = r.kind === "pending" ? "pending" : approx ? "similar" : r.kind === "mixed" || r.kind === "twin" ? "library" : r.kind;
+  b.lastElementChild.textContent = badgeText(r);
+  b.title = r.kind === "mixed"
+    ? "Le lettere già presenti nel PDF usano il font originale; le altre un font " + (r.twin ? "con lo stesso disegno e le stesse misure." : "simile.")
+    : r.kind === "twin" ? "Versione open del font con lo stesso disegno e le stesse misure."
+    : approx ? "Font non trovato: aggiungilo alla libreria per un risultato identico." : "";
+  $("addFontCta").hidden = !approx;
 }
 
 const fullText = () => {
@@ -355,7 +365,7 @@ async function runPreview() {
     const r = await call("preview", { pno: sel.pno, index: sel.index, text, scale: renderScale() });
     if (state.sel !== sel) return;
     sel.kind = r.kind;
-    setBadge(r.kind, r.fontLabel);
+    setBadge(r);
     if (text === sel.span.text) { sel.preview?.remove(); sel.preview = null; return; }
     const { width, height } = state.pages[sel.pno];
     const img = sel.preview || document.createElement("img");
@@ -387,7 +397,7 @@ async function apply() {
     state.redo = [];
     deselect();
     await refreshPage(sel.pno);
-    if (r.kind === "similar") toast(`Lettere non presenti nel font originale: usato ${r.fontLabel}`, "warn", 5000);
+    if (isApprox(r)) toast(`Lettere non presenti nel font originale: usato ${r.fontLabel}`, "warn", 5000);
     updateHistory();
     return sel;
   } catch (e) {
@@ -567,7 +577,8 @@ async function renderFontList() {
     const li = document.createElement("li");
     li.innerHTML = `<span></span><button type="button" class="icon-btn" aria-label="Rimuovi"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>`;
     li.firstChild.textContent = f.label;
-    li.firstChild.insertAdjacentHTML("beforeend", `<small>${Math.round(f.bytes.length / 1024)} KB</small>`);
+    const origin = f.web ? (f.exact ? "scaricato · " : "gemello open · ") : "";
+    li.firstChild.insertAdjacentHTML("beforeend", `<small>${origin}${Math.round(f.bytes.length / 1024)} KB</small>`);
     li.lastChild.onclick = async () => { await removeFont(f.id); forgetResolved(); renderFontList(); };
     ul.append(li);
   }
@@ -643,6 +654,63 @@ window.glifo?.onOpenFile?.((name, bytes) => openFile(new File([bytes], name, { t
 if ("serviceWorker" in navigator && location.protocol === "https:" && !isNative) {
   addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 }
+
+// ============ Installazione come app ============
+// Chrome/Edge (Android, Windows, Mac): installazione con un tocco.
+// iPhone e Safari non lo permettono: si mostra dove toccare, passo per passo.
+const ua = navigator.userAgent;
+const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+const isIPad = isIOS && !/iPhone|iPod/.test(ua);
+const isMacSafari = !isIOS && /Macintosh/.test(ua) && /Version\/[\d.]+.*Safari/.test(ua) && !/Chrome|Edg\//.test(ua);
+const safariMajor = +(ua.match(/Version\/(\d+)/)?.[1] || 0);
+const installed = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+let installEvt = null;
+
+if (isElectron || isNative || installed) $("installBox").remove();
+addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEvt = e; });
+addEventListener("appinstalled", () => { $("installBox")?.remove(); toast("Glifo è installata: la trovi tra le tue app"); });
+
+const SHARE = '<svg viewBox="0 0 24 24"><path d="M8 9H6v12h12V9h-2M12 3v12M8 7l4-4 4 4"/></svg>';
+const PLUS = '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg>';
+function coach(title, steps, arrow) {
+  $("coachTitle").textContent = title;
+  $("coachSteps").innerHTML = steps.map((s) => `<li><span>${s}</span></li>`).join("");
+  $("coachArrow").dataset.at = arrow || "";
+  $("coachArrow").hidden = !arrow;
+  $("coach").hidden = false;
+}
+$("coach").onclick = (e) => { if (!e.target.closest(".coach-card") || e.target === $("coachClose")) $("coach").hidden = true; };
+
+$("installBtn").onclick = async () => {
+  if (installEvt && !isIOS) {
+    installEvt.prompt();
+    const { outcome } = await installEvt.userChoice.catch(() => ({}));
+    if (outcome === "accepted") installEvt = null;
+    return;
+  }
+  if (isIOS) {
+    const inSafari = !/CriOS|FxiOS|EdgiOS/.test(ua);
+    // Safari 26 su iPhone: Condividi è dentro il menu •••
+    const menu = !isIPad && inSafari && safariMajor >= 26;
+    const at = isIPad || !inSafari ? "top-right" : menu ? "bottom-right" : "bottom";
+    coach("Aggiungi Glifo alla Home", [
+      menu ? `Tocca <b>•••</b> in basso a destra, poi <b>${SHARE} Condividi</b>`
+        : `Tocca <b>${SHARE} Condividi</b> ${at === "bottom" ? "qui sotto" : "in alto a destra"}`,
+      `Scorri e tocca <b>${PLUS} Aggiungi alla schermata Home</b>`,
+      "Tocca <b>Aggiungi</b>. Fatto!",
+    ], at);
+    return;
+  }
+  if (isMacSafari) {
+    coach("Aggiungi Glifo al Dock", [
+      "Nella barra dei menu in alto clicca <b>File</b>",
+      "Scegli <b>Aggiungi al Dock…</b>",
+      "Clicca <b>Aggiungi</b>: Glifo si apre come un'app",
+    ], "top-left");
+    return;
+  }
+  location.href = "installa.html";
+};
 
 // ============ Solo sviluppo: scenario automatico per screenshot (#test?pdf=…&find=…&type=…) ============
 if ((import.meta.env.DEV && location.hash.startsWith("#test")) || import.meta.env.VITE_SELFTEST) {

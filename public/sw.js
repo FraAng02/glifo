@@ -1,5 +1,5 @@
 // Service worker: l'app funziona offline dopo la prima apertura.
-const CACHE = "glifo-v1";
+const CACHE = "glifo-v2";
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["./", "./index.html", "./manifest.webmanifest"])));

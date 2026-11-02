@@ -157,9 +157,38 @@ em { font-style: italic; }
 .pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 26px 0 0; padding: 0; list-style: none; }
 .pills li { display: flex; align-items: center; gap: 8px; padding: 7px 13px 7px 8px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-2); font-size: 13px; }
 .pills b svg { width: 12px; height: 12px; stroke-width: 2.2; }
-.install-link { display: inline-block; margin-top: 22px; color: var(--accent); font-size: 14px; font-weight: 600; text-decoration: none; }
-.install-link:hover { text-decoration: underline; }
-@media (display-mode: standalone) { .install-link { display: none; } }
+.install-box { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 26px; }
+.install-btn {
+  display: inline-flex; align-items: center; gap: 9px; padding: 12px 22px; border: 0; border-radius: 99px; cursor: pointer;
+  background: var(--ink); color: var(--bg); font: 600 15px var(--sans); box-shadow: var(--shadow-1);
+}
+.install-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.install-link { color: var(--ink-3); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+@media (display-mode: standalone) { .install-box { display: none; } }
+
+/* Installazione guidata */
+.coach { position: fixed; inset: 0; z-index: 60; background: rgba(15, 12, 8, .55); backdrop-filter: blur(3px); display: grid; place-items: center; padding: 16px; }
+.coach[hidden] { display: none; }
+.coach-card { width: min(380px, 100%); background: var(--surface-solid); border-radius: 22px; padding: 22px; box-shadow: var(--shadow-2); }
+.coach-card h2 { margin: 0 0 14px; font: 600 22px var(--serif); }
+.coach-card ol { margin: 0 0 18px; padding: 0; list-style: none; counter-reset: c; display: grid; gap: 12px; }
+.coach-card li { counter-increment: c; display: flex; gap: 12px; align-items: baseline; font-size: 15px; line-height: 1.45; }
+.coach-card li::before {
+  content: counter(c); flex: none; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 99px;
+  background: var(--accent); color: #fff; font: italic 700 13px var(--serif);
+}
+.coach-card b svg { width: 16px; height: 16px; vertical-align: -3px; fill: none; stroke: var(--accent); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.coach-card .ghost { width: 100%; }
+.coach-arrow { position: fixed; color: #fff; width: 56px; height: 56px; animation: nudge 1s ease-in-out infinite; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .4)); }
+.coach-arrow[hidden] { display: none; }
+.coach-arrow svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.coach-arrow[data-at="bottom"] { bottom: calc(6px + var(--safe-b)); left: calc(50% - 28px); }
+.coach-arrow[data-at="bottom-right"] { bottom: calc(6px + var(--safe-b)); right: 14px; }
+.coach-arrow[data-at="top-right"] { top: calc(6px + var(--safe-t)); right: 14px; rotate: 180deg; }
+.coach-arrow[data-at="top-left"] { top: 6px; left: 90px; rotate: 180deg; }
+.coach-arrow[data-at^="top"] { animation-name: nudge-up; }
+@keyframes nudge { 50% { translate: 0 8px; } }
+@keyframes nudge-up { 50% { translate: 0 -8px; } }
 .pills b { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 99px; background: var(--ink); color: var(--bg); font: italic 600 11px var(--serif); }
 
 /* ============ Editor ============ */

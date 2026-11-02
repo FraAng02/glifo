@@ -1,7 +1,9 @@
-// Libreria font: file aggiunti dall'utente (IndexedDB) + font installati nel sistema.
+// Libreria font: file aggiunti dall'utente (IndexedDB), font installati nel sistema
+// e, se mancano, font scaricati dai cataloghi open (salvati per l'uso offline).
 import { norm } from "./engine/norm.js";
 import { readFontFile, extractFace, findFace } from "./engine/fontfile.js";
 import { isElectron } from "./platform.js";
+import { fetchWebFont } from "./webfonts.js";
 
 const STORE = "fonts";
 let dbPromise = null;
@@ -63,23 +65,33 @@ async function localFonts() {
 }
 
 const cache = new Map();
-// Byte del font completo che corrisponde a `fontName`, oppure null.
-export async function resolveFont(fontName) {
+// Font completo per `fontName`: { bytes, exact, label } oppure null.
+// exact = stesso font; altrimenti è un gemello open con le stesse misure.
+export async function resolveFont(fontName, style = {}) {
   const key = norm(fontName);
   if (cache.has(key)) return cache.get(key);
-  let bytes = null;
+  let found = null;
   try {
     const hit = (await listFonts()).find((f) => f.keys.includes(key));
-    if (hit) bytes = hit.bytes;
+    if (hit) found = { bytes: hit.bytes, exact: hit.exact !== false, label: hit.label };
     else if (systemFonts.enabled) {
       const f = (await localFonts()).find((f) => norm(f.postscriptName) === key || norm(f.fullName) === key);
       if (f) {
         const all = new Uint8Array(await (await f.blob()).arrayBuffer());
-        bytes = findFace(all, f.postscriptName) || all;
+        found = { bytes: findFace(all, f.postscriptName) || all, exact: true, label: f.fullName };
       }
     }
-  } catch { bytes = null; }
-  cache.set(key, bytes);
-  return bytes;
+    if (!found) {
+      const web = await fetchWebFont(fontName, style);
+      if (web) {
+        found = { bytes: web.bytes, exact: web.exact, label: web.label };
+        const record = { id: `web-${key}`, label: web.label, keys: [key], bytes: web.bytes, exact: web.exact, web: true };
+        tx("readwrite", (s) => s.put(record)).catch(() => {});
+      }
+    }
+  } catch { found = null; }
+  // Un errore di rete non va ricordato: si riprova alla prossima selezione
+  if (found || navigator.onLine) cache.set(key, found);
+  return found;
 }
 export const forgetResolved = () => cache.clear();

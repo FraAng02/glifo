@@ -37,7 +37,10 @@
         <li><b><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></b> Anteprima dal vivo</li>
         <li><b><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></b> Offline e privato</li>
       </ul>
-      <a class="install-link" id="installLink" href="installa.html">Installa Glifo su telefono o computer →</a>
+      <div class="install-box" id="installBox">
+        <button class="install-btn" id="installBtn"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span>Installa l'app</span></button>
+        <a class="install-link" href="installa.html">Guida all'installazione</a>
+      </div>
     </section>
   </main>
 
@@ -137,6 +140,16 @@
       <ul class="font-list" id="fontList"></ul>
     </form>
   </dialog>
+
+  <!-- ============ Installazione guidata (iPhone / Safari) ============ -->
+  <div class="coach" id="coach" hidden>
+    <div class="coach-card">
+      <h2 id="coachTitle">Aggiungi Glifo alla Home</h2>
+      <ol id="coachSteps"></ol>
+      <button class="ghost" id="coachClose">Ho capito</button>
+    </div>
+    <div class="coach-arrow" id="coachArrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v17M5 13l7 7 7-7"/></svg></div>
+  </div>
 
   <div class="toasts" id="toasts" aria-live="polite"></div>
   <div class="busy" id="busy" hidden><div class="spinner"></div><span id="busyText">Apertura…</span></div>

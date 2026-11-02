@@ -8,6 +8,7 @@
   <meta name="description" content="Come installare Glifo su Mac, Windows, iPhone e Android.">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
   <title>Installa Glifo</title>
   <style>
     :root {
@@ -102,6 +103,21 @@
     code { font: 13px ui-monospace, Menlo, Consolas, monospace; background: var(--card); border: 1px solid var(--line); padding: 2px 6px; border-radius: 6px; word-break: break-all; }
     .fine { font-size: 13px; color: var(--ink-3); margin-top: 18px; }
 
+    .quick {
+      display: flex; align-items: center; gap: 14px; margin: 0 0 22px; padding: 16px; border-radius: 16px;
+      background: var(--card); border: 1px solid var(--line);
+    }
+    .quick[hidden] { display: none; }
+    .quick p { margin: 0; flex: 1; font-size: 15px; }
+    .quick small { display: block; color: var(--ink-3); font-size: 13px; }
+    .quick button {
+      flex: none; padding: 12px 18px; border: 0; border-radius: 99px; background: var(--accent); color: #fff;
+      font: 600 15px var(--sans); cursor: pointer;
+    }
+    .easy { margin: 0 0 16px; padding: 12px 14px; border-radius: 12px; background: var(--accent-soft); font-size: 14px; color: var(--ink-2); }
+    .easy strong { color: var(--ink); }
+    .easy a { color: var(--accent); font-weight: 600; }
+
     footer { margin-top: 40px; text-align: center; font-size: 14px; color: var(--ink-3); }
     footer a { color: var(--accent); }
   </style>
@@ -157,6 +173,11 @@
 
   <h1>Installa Glifo<br><em>in un minuto.</em></h1>
   <p class="lead">Scegli il tuo dispositivo e segui le immagini: tocca o clicca dove vedi il <strong style="color:var(--accent)">cerchio rosso</strong>. È gratis.</p>
+
+  <div class="quick" id="quick" hidden>
+    <p><strong>Installa con un clic</strong><small>Il tuo browser può installare Glifo direttamente.</small></p>
+    <button id="quickBtn">Installa</button>
+  </div>
 
   <div class="tabs" role="tablist">
     <button role="tab" data-os="iphone">iPhone</button>
@@ -355,6 +376,7 @@
 
   <!-- ===================== Mac ===================== -->
   <section data-os="mac" hidden>
+    <p class="easy"><strong>Il modo più semplice:</strong> apri <a href="./">Glifo</a> con <strong>Chrome</strong> o <strong>Edge</strong> e premi <strong>Installa l'app</strong>. Un clic, nessun avviso. Con <strong>Safari</strong>: menu <strong>File → Aggiungi al Dock</strong>.<br>Preferisci l'app classica? Segui i passaggi qui sotto.</p>
     <p class="note">Per i Mac con chip Apple (M1, M2, M3, M4…). Per verificarlo: menu Mela in alto a sinistra → <em>Informazioni su questo Mac</em>.</p>
     <a class="dl" href="https://github.com/FraAng02/glifo/releases/download/v1.0.0/Glifo-1.0.0-arm64.dmg">
       <svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Scarica per Mac
@@ -456,6 +478,7 @@
 
   <!-- ===================== Windows ===================== -->
   <section data-os="windows" hidden>
+    <p class="easy"><strong>Il modo più semplice:</strong> apri <a href="./">Glifo</a> con <strong>Edge</strong> o <strong>Chrome</strong> e premi <strong>Installa l'app</strong>. Un clic, nessun avviso, e la trovi nel menu Start.<br>Preferisci l'app classica? Segui i passaggi qui sotto.</p>
     <p class="note">Per Windows 10 e 11.</p>
     <a class="dl" href="https://github.com/FraAng02/glifo/releases/download/v1.0.0/Glifo-Setup-1.0.0.exe">
       <svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Scarica per Windows
@@ -562,6 +585,18 @@
     /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? "iphone" :
     /Android/.test(ua) ? "android" :
     /Windows/.test(ua) ? "windows" : "mac";
+  // Chrome / Edge / Samsung Internet: installazione diretta
+  let installEvt = null;
+  addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEvt = e; document.getElementById("quick").hidden = false; });
+  document.getElementById("quickBtn").onclick = async () => {
+    if (!installEvt) return;
+    installEvt.prompt();
+    const { outcome } = await installEvt.userChoice.catch(() => ({}));
+    if (outcome === "accepted") document.getElementById("quick").hidden = true;
+  };
+  addEventListener("appinstalled", () => (document.getElementById("quick").hidden = true));
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+
   const hash = location.hash.slice(1);
   show(["iphone", "android", "mac", "windows"].includes(hash) ? hash : guess);
 </script>

@@ -11,7 +11,7 @@ protocol.registerSchemesAsPrivileged([
 
 const CSP = [
   "default-src 'self'", "script-src 'self' 'wasm-unsafe-eval'", "worker-src 'self' blob:",
-  "img-src 'self' blob: data:", "style-src 'self' 'unsafe-inline'", "connect-src 'self' blob: data:", "font-src 'self' data:",
+  "img-src 'self' blob: data:", "style-src 'self' 'unsafe-inline'", "connect-src 'self' blob: data: https://api.fontsource.org https://cdn.jsdelivr.net", "font-src 'self' data:",
 ].join("; ");
 
 let win = null;
