@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#efece6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="description" content="Modifica le scritte di qualsiasi PDF mantenendo il font originale.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <title>Glifo</title>
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <div class="titlebar-drag" aria-hidden="true"></div>
+  <!-- ============ Benvenuto ============ -->
+  <main id="welcome" class="welcome">
+    <div class="welcome-glyphs" aria-hidden="true"><span>A</span><span>g</span><span>&amp;</span></div>
+    <header class="brand"><span class="mark">g<i></i></span><span class="brand-name">Glifo</span></header>
+    <section class="hero">
+      <h1>Riscrivi ogni PDF.<br><em>Con il suo font.</em></h1>
+      <p>Modifica le scritte di qualsiasi documento mantenendo il carattere tipografico originale. Tutto avviene sul tuo dispositivo.</p>
+      <label class="drop" id="drop">
+        <input type="file" id="file" accept="application/pdf,.pdf" hidden>
+        <span class="drop-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6h14l10 10v24a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"/><path d="M28 6v10h10"/><path d="M19 30l5-5 5 5M24 25v11"/></svg>
+        </span>
+        <span class="drop-title"><span class="hide-touch">Trascina qui un PDF</span><span class="show-touch">Tocca per aprire un PDF</span></span>
+        <span class="drop-or hide-touch">oppure <u>sfoglia i file</u></span>
+        <kbd class="drop-kbd">⌘O</kbd>
+      </label>
+      <ul class="pills">
+        <li><b>Aa</b> Font originale preservato</li>
+        <li><b><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></b> Anteprima dal vivo</li>
+        <li><b><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></b> Offline e privato</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- ============ Editor ============ -->
+  <div id="editor" class="editor" hidden>
+    <header class="topbar glass">
+      <button class="icon-btn" id="close" title="Chiudi documento" aria-label="Chiudi documento">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <span class="mark small">g<i></i></span>
+      <div class="doc-title"><span id="docName">Documento</span><small id="docMeta"></small></div>
+      <div class="sep"></div>
+      <div class="group hide-mobile">
+        <button class="icon-btn" id="undo" title="Annulla (⌘Z)" aria-label="Annulla"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+        <button class="icon-btn" id="redo" title="Ripeti (⇧⌘Z)" aria-label="Ripeti"><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
+      </div>
+      <div class="group zoom hide-mobile">
+        <button class="icon-btn" id="zoomOut" title="Riduci (⌘−)" aria-label="Riduci"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+        <button class="zoom-label" id="zoomLabel" title="Adatta alla larghezza">100%</button>
+        <button class="icon-btn" id="zoomIn" title="Ingrandisci (⌘+)" aria-label="Ingrandisci"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      </div>
+      <button class="toggle hide-mobile" id="reveal" title="Mostra tutte le scritte modificabili (T)" aria-pressed="false">
+        <svg viewBox="0 0 24 24"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg><span>Scritte</span>
+      </button>
+      <button class="icon-btn hide-mobile" id="fontsBtn" title="Libreria font" aria-label="Libreria font"><svg viewBox="0 0 24 24"><path d="M4 20 10 4l6 16M6.5 14h7"/><path d="M17 20v-6.5a2.5 2.5 0 0 1 5 0V20M17 16.5h5"/></svg></button>
+      <button class="icon-btn" id="themeBtn" title="Tema chiaro/scuro" aria-label="Tema"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg></button>
+      <button class="primary" id="export"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span>Esporta</span></button>
+    </header>
+
+    <nav class="rail" id="rail" aria-label="Pagine"></nav>
+
+    <section class="canvas" id="canvas">
+      <div class="pages" id="pages"></div>
+    </section>
+
+    <aside class="inspector glass" id="inspector">
+      <div class="grabber" aria-hidden="true"></div>
+      <div class="insp-empty" id="inspEmpty">
+        <div class="empty-art" aria-hidden="true"><span>T</span><i></i></div>
+        <h3>Seleziona una scritta</h3>
+        <p>Clicca su qualsiasi testo della pagina per modificarlo. Il carattere originale viene mantenuto.</p>
+        <dl class="shortcuts hide-mobile">
+          <dt>Invio</dt><dd>Applica</dd>
+          <dt>Tab</dt><dd>Scritta successiva</dd>
+          <dt>Esc</dt><dd>Annulla selezione</dd>
+          <dt>T</dt><dd>Mostra tutte le scritte</dd>
+          <dt>⌘Z</dt><dd>Annulla modifica</dd>
+        </dl>
+        <div class="history" id="historyWrap" hidden>
+          <h4>Modifiche <span id="histCount"></span></h4>
+          <ol id="history"></ol>
+        </div>
+      </div>
+      <div class="insp-edit" id="inspEdit" hidden>
+        <div class="eyebrow">Testo selezionato · pag. <span id="selPage"></span></div>
+        <div class="font-card">
+          <div class="font-name" id="selFont">Font</div>
+          <div class="font-meta"><span id="selSize"></span><span class="swatch" id="selColor"></span><span id="selStyle"></span></div>
+          <div class="badge" id="selBadge" data-kind="pending"><i></i><span>Analisi del font…</span></div>
+          <button class="link" id="addFontCta" hidden>Aggiungi il font originale →</button>
+        </div>
+        <label class="field">
+          <span>Nuovo testo</span>
+          <input id="editInput" type="text" autocomplete="off" autocorrect="off" spellcheck="false">
+        </label>
+        <div class="orig"><span>Originale</span><q id="selOrig"></q></div>
+        <div class="actions">
+          <button class="ghost" id="cancelEdit">Annulla</button>
+          <button class="primary" id="applyEdit">Applica <kbd class="hide-touch">↵</kbd></button>
+        </div>
+      </div>
+    </aside>
+
+    <nav class="dock glass show-mobile" aria-label="Strumenti">
+      <button class="icon-btn" id="mUndo" aria-label="Annulla"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+      <button class="icon-btn" id="mRedo" aria-label="Ripeti"><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
+      <span class="page-chip" id="pageChip">1 / 1</span>
+      <button class="icon-btn" id="mReveal" aria-label="Mostra scritte"><svg viewBox="0 0 24 24"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg></button>
+      <button class="icon-btn" id="mFonts" aria-label="Libreria font"><svg viewBox="0 0 24 24"><path d="M4 20 10 4l6 16M6.5 14h7"/><path d="M17 20v-6.5a2.5 2.5 0 0 1 5 0V20M17 16.5h5"/></svg></button>
+    </nav>
+  </div>
+
+  <!-- ============ Libreria font ============ -->
+  <dialog id="fontsDialog" class="sheet-dialog">
+    <form method="dialog" class="dlg">
+      <header><h2>Libreria font</h2><button class="icon-btn" value="close" aria-label="Chiudi"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+      <p class="muted">Spesso un PDF contiene solo le lettere già usate di un font. Per scrivere lettere nuove con lo <em>stesso</em> font, Glifo usa la versione completa da qui.</p>
+      <div class="sys" id="sysFonts">
+        <div><b>Font del sistema</b><small id="sysStatus">Usa automaticamente i font installati.</small></div>
+        <button type="button" class="ghost" id="sysEnable">Consenti</button>
+      </div>
+      <label class="drop small" id="fontDrop">
+        <input type="file" id="fontFile" accept=".ttf,.otf,.ttc,font/ttf,font/otf,font/collection" multiple hidden>
+        <span class="drop-title">Aggiungi file font</span>
+        <span class="drop-or">.ttf · .otf · .ttc</span>
+      </label>
+      <ul class="font-list" id="fontList"></ul>
+    </form>
+  </dialog>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <div class="busy" id="busy" hidden><div class="spinner"></div><span id="busyText">Apertura…</span></div>
+  <div class="dropveil" id="dropveil" hidden><div>Rilascia per aprire</div></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

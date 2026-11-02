@@ -1,0 +1,8 @@
+node_modules/
+dist/
+release/
+test/
+.DS_Store
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+android/app/src/main/assets/public/

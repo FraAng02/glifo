@@ -1,0 +1,8 @@
+{
+  "appId": "app.glifo.editor",
+  "appName": "Glifo",
+  "webDir": "dist",
+  "backgroundColor": "#efece6",
+  "ios": { "contentInset": "never" },
+  "android": { "allowMixedContent": false }
+}
